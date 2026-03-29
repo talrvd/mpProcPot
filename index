@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TBC Potion Profit Calc</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --primary: #38bdf8;
+            --success: #4ade80;
+            --danger: #f87171;
+            --text: #f1f5f9;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        h2 { margin-top: 0; color: var(--primary); font-size: 1.5rem; text-align: center; }
+
+        .input-group { margin-bottom: 1rem; }
+        
+        label { display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: #94a3b8; }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        input:focus { outline: 2px solid var(--primary); border-color: transparent; }
+
+        .results {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #334155;
+        }
+
+        .row { display: flex; justify-content: space-between; margin-bottom: 0.75rem; font-size: 0.95rem; }
+
+        .profit-box {
+            background: #0f172a;
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .profit-val { font-size: 1.5rem; font-weight: bold; }
+        .pos { color: var(--success); }
+        .neg { color: var(--danger); }
+
+        .badge {
+            font-size: 0.7rem;
+            background: var(--primary);
+            color: var(--bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Super Mana Potion <span class="badge">TBC</span></h2>
+    
+    <div class="input-group">
+        <label>Quantity to Craft</label>
+        <input type="number" id="qty" value="200">
+    </div>
+
+    <div class="input-group">
+        <label>Market Sell Price (Gold)</label>
+        <input type="number" id="sellPrice" value="2.17" step="0.01">
+    </div>
+
+    <div class="input-group">
+        <label>Felweed x1 (Gold)</label>
+        <input type="number" id="felweed" value="1.23" step="0.01">
+    </div>
+
+    <div class="input-group">
+        <label>Dreaming Glory x2 (Total Gold)</label>
+        <input type="number" id="dg" value="1.10" step="0.01">
+    </div>
+
+    <div class="input-group">
+        <label>Imbued Vial (Gold)</label>
+        <input type="number" id="vial" value="0.34" step="0.01">
+    </div>
+
+    <div class="results">
+        <div class="row">
+            <span>Craft Cost (Per Potion):</span>
+            <span id="unitCost">0.00g</span>
+        </div>
+        <div class="row">
+            <span>Expected Yield (15% Proc):</span>
+            <span id="yield">0</span>
+        </div>
+        <div class="row">
+            <span>Max Crafting Cost for Profit:</span>
+            <span id="maxCost" style="color: var(--primary)">0.00g</span>
+        </div>
+
+        <div class="profit-box">
+            <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px;">Estimated Total Profit (Inc. 5% AH Cut)</div>
+            <div id="totalProfit" class="profit-val">0.00g</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const inputs = document.querySelectorAll('input');
+    
+    function calculate() {
+        const qty = parseFloat(document.getElementById('qty').value) || 0;
+        const sellPrice = parseFloat(document.getElementById('sellPrice').value) || 0;
+        const felweed = parseFloat(document.getElementById('felweed').value) || 0;
+        const dg = parseFloat(document.getElementById('dg').value) || 0;
+        const vial = parseFloat(document.getElementById('vial').value) || 0;
+
+        // Constants
+        const procRate = 1.15;
+        const ahCut = 0.95;
+
+        // Logic
+        const craftCostPerUnit = felweed + dg + vial;
+        const totalInvestment = craftCostPerUnit * qty;
+        
+        const expectedYield = qty * procRate;
+        const revenuePerUnit = sellPrice * ahCut;
+        const totalRevenue = expectedYield * revenuePerUnit;
+        
+        const totalProfit = totalRevenue - totalInvestment;
+        const maxCraftCost = sellPrice * procRate * ahCut;
+
+        // Display
+        document.getElementById('unitCost').innerText = craftCostPerUnit.toFixed(2) + 'g';
+        document.getElementById('yield').innerText = Math.floor(expectedYield);
+        document.getElementById('maxCost').innerText = maxCraftCost.toFixed(2) + 'g';
+        
+        const profitEl = document.getElementById('totalProfit');
+        profitEl.innerText = totalProfit.toFixed(2) + 'g';
+        
+        if (totalProfit >= 0) {
+            profitEl.className = 'profit-val pos';
+        } else {
+            profitEl.className = 'profit-val neg';
+        }
+    }
+
+    inputs.forEach(input => input.addEventListener('input', calculate));
+    calculate(); // Initial run
+</script>
+
+</body>
+</html>
